@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using static MediaCenter.Vistas.VistaMusica;
+using MediaCenter.Servicios;
 
 namespace MediaCenter.Vistas
 {
@@ -25,11 +26,36 @@ namespace MediaCenter.Vistas
 
             if (dialogo.ShowDialog() == DialogResult.OK)
             {
+                int agregados = 0;
+                int rechazados = 0;
+                string listaRechazos = "";
+
                 foreach (string ruta in dialogo.FileNames)
                 {
-                    // Reusamos ItemCancion porque guarda igual: texto + ruta
+                    string mensajeError;
+
+                    if (!ValidarArchivos.EsVideoValido(ruta, out mensajeError))
+                    {
+                        rechazados++;
+                        listaRechazos += "- " + Path.GetFileName(ruta) + " -> " + mensajeError + Environment.NewLine;
+                        continue;
+                    }
+
                     string nombre = Path.GetFileNameWithoutExtension(ruta);
                     lstVideos.Items.Add(new ItemCancion(nombre, ruta));
+                    agregados++;
+                }
+
+                if (rechazados > 0)
+                {
+                    MessageBox.Show(
+                        "Resultado:" + Environment.NewLine +
+                        "Agregados: " + agregados + Environment.NewLine +
+                        "Rechazados: " + rechazados + Environment.NewLine + Environment.NewLine +
+                        "Archivos rechazados:" + Environment.NewLine + listaRechazos,
+                        "Archivos corruptos detectados",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
                 }
             }
 

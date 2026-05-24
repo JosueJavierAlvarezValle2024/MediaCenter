@@ -330,7 +330,6 @@ namespace MediaCenter.Vistas
             return resultado;
         }
 
-
-
+        
     }
 }

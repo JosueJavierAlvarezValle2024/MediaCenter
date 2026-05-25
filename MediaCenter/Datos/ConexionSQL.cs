@@ -117,6 +117,33 @@ namespace MediaCenter.Datos
 
 
 
+        public static string ObtenerCadena()
+        {
+            return cadenaConexion;
+        }
+
+        public static int ContarPorTipo(string tipo)
+        {
+            int total = 0;
+            using (SqlConnection conn = ObtenerConexion())
+            {
+                conn.Open();
+                string sql = "SELECT COUNT(*) FROM Archivos WHERE Tipo = @tipo";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@tipo", tipo);
+                    total = (int)cmd.ExecuteScalar();
+                }
+            }
+            return total;
+        }
+
+
+
+
+
+
+
 
     }
     

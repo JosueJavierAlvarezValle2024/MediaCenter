@@ -44,12 +44,9 @@ namespace MediaCenter
         private void btnConfiguracion_Click(object sender, EventArgs e)
         {
             panelContenido.Controls.Clear();
-            Label lbl = new Label();
-            lbl.Text = "⚙️ Aquí va la Vista de Configuración.";
-            lbl.Font = new Font("Segoe UI", 20);
-            lbl.AutoSize = true;
-            lbl.Location = new Point(50, 50);
-            panelContenido.Controls.Add(lbl);
+            VistaConfiguracion vista = new VistaConfiguracion();
+            vista.Dock = DockStyle.Fill;
+            panelContenido.Controls.Add(vista);
         }
 
 

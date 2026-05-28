@@ -74,33 +74,62 @@ namespace MediaCenter.Vistas
             if (lstFotos.SelectedItem == null) return;
 
             string ruta = lstFotos.SelectedItem.ToString();
-            picVisor.Image = Image.FromFile(ruta);
 
-            string info = "Archivo: " + Path.GetFileName(ruta) + "\n";
-
-            using (Image img = Image.FromFile(ruta))
+            // Verificar que el archivo sigue existiendo
+            if (!File.Exists(ruta))
             {
-                double? lat = ObtenerCoordenada(img, 0x0002, 0x0001);
-                double? lon = ObtenerCoordenada(img, 0x0004, 0x0003);
-
-                if (lat.HasValue && lon.HasValue)
-                {
-                    info += "Latitud: " + lat.Value.ToString("F6") + "\n";
-                    info += "Longitud: " + lon.Value.ToString("F6") + "\n";
-
-                    string lugar = await ObtenerNombreLugarAsync(lat.Value, lon.Value);
-                    info += "Lugar: " + lugar;
-
-                    MostrarMapa(lat.Value, lon.Value);
-                }
-                else
-                {
-                    info += "Esta foto no tiene datos GPS";
-                    webMapa.Source = new Uri("about:blank");
-                }
+                MessageBox.Show("El archivo ya no existe en:\n" + ruta,
+                    "Archivo no encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                picVisor.Image = null;
+                lblInfoFoto.Text = "Archivo no encontrado.";
+                return;
             }
 
-            lblInfoFoto.Text = info;
+            // Cargar imagen en el visor
+            try
+            {
+                picVisor.Image = Image.FromFile(ruta);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al abrir la imagen: " + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Leer metadatos GPS
+            try
+            {
+                string info = "Archivo: " + Path.GetFileName(ruta) + Environment.NewLine;
+
+                using (Image img = Image.FromFile(ruta))
+                {
+                    double? lat = ObtenerCoordenada(img, 0x0002, 0x0001);
+                    double? lon = ObtenerCoordenada(img, 0x0004, 0x0003);
+
+                    if (lat.HasValue && lon.HasValue)
+                    {
+                        info += "Latitud: " + lat.Value.ToString("F6") + Environment.NewLine;
+                        info += "Longitud: " + lon.Value.ToString("F6") + Environment.NewLine;
+
+                        string lugar = await ObtenerNombreLugarAsync(lat.Value, lon.Value);
+                        info += "Lugar: " + lugar;
+
+                        MostrarMapa(lat.Value, lon.Value);
+                    }
+                    else
+                    {
+                        info += "Esta foto no tiene datos GPS";
+                        webMapa.Source = new Uri("about:blank");
+                    }
+                }
+
+                lblInfoFoto.Text = info;
+            }
+            catch (Exception ex)
+            {
+                lblInfoFoto.Text = "Error al leer metadatos: " + ex.Message;
+            }
         }
 
         // Método para extraer una coordenada (latitud o longitud) del EXIF

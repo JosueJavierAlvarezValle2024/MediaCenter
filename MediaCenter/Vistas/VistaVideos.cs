@@ -68,21 +68,45 @@ namespace MediaCenter.Vistas
             ItemCancion item = (ItemCancion)lstVideos.SelectedItem;
             string ruta = item.Ruta;
 
-            // Reproducir el video
-            wmVideo.URL = ruta;
+            // Verificar que el archivo sigue existiendo
+            if (!System.IO.File.Exists(ruta))
+            {
+                MessageBox.Show("El archivo ya no existe en:\n" + ruta,
+                    "Archivo no encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                lblInfoVideo.Text = "Archivo no encontrado.";
+                return;
+            }
+
+            // Reproducir
+            try
+            {
+                wmVideo.URL = ruta;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al reproducir: " + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             // Mostrar información del archivo
-            FileInfo info = new FileInfo(ruta);
+            try
+            {
+                FileInfo info = new FileInfo(ruta);
 
-            string texto = "Archivo: " + info.Name + "\n";
-            texto += "Ruta: " + info.FullName + "\n";
-            texto += "Tamaño: " + (info.Length / 1024.0 / 1024.0).ToString("F2") + " MB\n";
-            texto += "Formato: " + info.Extension.ToUpper().Replace(".", "") + "\n";
-            texto += "Fecha creación: " + info.CreationTime.ToString("dd/MM/yyyy HH:mm") + "\n";
-            texto += "Última modificación: " + info.LastWriteTime.ToString("dd/MM/yyyy HH:mm");
+                string texto = "Archivo: " + info.Name + Environment.NewLine;
+                texto += "Ruta: " + info.FullName + Environment.NewLine;
+                texto += "Tamaño: " + (info.Length / 1024.0 / 1024.0).ToString("F2") + " MB" + Environment.NewLine;
+                texto += "Formato: " + info.Extension.ToUpper().Replace(".", "") + Environment.NewLine;
+                texto += "Fecha creación: " + info.CreationTime.ToString("dd/MM/yyyy HH:mm") + Environment.NewLine;
+                texto += "Última modificación: " + info.LastWriteTime.ToString("dd/MM/yyyy HH:mm");
 
-            lblInfoVideo.Text = texto;
-
+                lblInfoVideo.Text = texto;
+            }
+            catch (Exception ex)
+            {
+                lblInfoVideo.Text = "Error al leer información: " + ex.Message;
+            }
         }
 
 

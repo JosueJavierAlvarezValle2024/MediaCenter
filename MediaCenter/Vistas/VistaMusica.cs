@@ -106,24 +106,43 @@ namespace MediaCenter.Vistas
             ItemCancion item = (ItemCancion)lstCanciones.SelectedItem;
             string ruta = item.Ruta;
 
-            // Reproducir la canción
-            wmPlayer.URL = ruta;
+            // Verificar que el archivo sigue existiendo antes de reproducir
+            if (!System.IO.File.Exists(ruta))
+            {
+                MessageBox.Show("El archivo ya no existe en:\n" + ruta,
+                    "Archivo no encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                lblInfoCancion.Text = "Archivo no encontrado.";
+                picCaratula.Image = null;
+                return;
+            }
+
+            // Reproducir
+            try
+            {
+                wmPlayer.URL = ruta;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al reproducir: " + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             // Leer y mostrar metadatos
             try
             {
                 var archivo = TagLib.File.Create(ruta);
 
-                string info = "Título: " + (archivo.Tag.Title ?? "Desconocido") + "\n";
-                info += "Artista: " + (archivo.Tag.FirstPerformer ?? "Desconocido") + "\n";
-                info += "Álbum: " + (archivo.Tag.Album ?? "Desconocido") + "\n";
-                info += "Año: " + (archivo.Tag.Year == 0 ? "Desconocido" : archivo.Tag.Year.ToString()) + "\n";
-                info += "Género: " + (archivo.Tag.FirstGenre ?? "Desconocido") + "\n";
+                string info = "Título: " + (archivo.Tag.Title ?? "Desconocido") + Environment.NewLine;
+                info += "Artista: " + (archivo.Tag.FirstPerformer ?? "Desconocido") + Environment.NewLine;
+                info += "Álbum: " + (archivo.Tag.Album ?? "Desconocido") + Environment.NewLine;
+                info += "Año: " + (archivo.Tag.Year == 0 ? "Desconocido" : archivo.Tag.Year.ToString()) + Environment.NewLine;
+                info += "Género: " + (archivo.Tag.FirstGenre ?? "Desconocido") + Environment.NewLine;
                 info += "Duración: " + archivo.Properties.Duration.ToString(@"mm\:ss");
 
                 lblInfoCancion.Text = info;
 
-                // Mostrar la carátula si existe
+                // Mostrar caratula si existe
                 if (archivo.Tag.Pictures.Length > 0)
                 {
                     var picData = archivo.Tag.Pictures[0].Data.Data;

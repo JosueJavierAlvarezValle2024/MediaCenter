@@ -34,6 +34,7 @@
             lblInfoFoto = new Label();
             btnEditarGPS = new Button();
             webMapa = new Microsoft.Web.WebView2.WinForms.WebView2();
+            btnImportarCarpeta = new Button();
             ((System.ComponentModel.ISupportInitialize)picVisor).BeginInit();
             ((System.ComponentModel.ISupportInitialize)webMapa).BeginInit();
             SuspendLayout();
@@ -97,11 +98,22 @@
             webMapa.TabIndex = 5;
             webMapa.ZoomFactor = 1D;
             // 
+            // btnImportarCarpeta
+            // 
+            btnImportarCarpeta.Location = new Point(295, 21);
+            btnImportarCarpeta.Name = "btnImportarCarpeta";
+            btnImportarCarpeta.Size = new Size(94, 29);
+            btnImportarCarpeta.TabIndex = 6;
+            btnImportarCarpeta.Text = "Importar Carpeta";
+            btnImportarCarpeta.UseVisualStyleBackColor = true;
+            btnImportarCarpeta.Click += btnImportarCarpeta_Click;
+            // 
             // VistaFotos
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
+            Controls.Add(btnImportarCarpeta);
             Controls.Add(webMapa);
             Controls.Add(btnEditarGPS);
             Controls.Add(lblInfoFoto);
@@ -110,6 +122,7 @@
             Controls.Add(btnAgregarFoto);
             Name = "VistaFotos";
             Size = new Size(900, 700);
+            Load += VistaFotos_Load;
             ((System.ComponentModel.ISupportInitialize)picVisor).EndInit();
             ((System.ComponentModel.ISupportInitialize)webMapa).EndInit();
             ResumeLayout(false);
@@ -123,5 +136,6 @@
         private Label lblInfoFoto;
         private Button btnEditarGPS;
         private Microsoft.Web.WebView2.WinForms.WebView2 webMapa;
+        private Button btnImportarCarpeta;
     }
 }

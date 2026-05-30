@@ -14,12 +14,13 @@ namespace MediaCenter.Vistas
         public VistaBaseDatos()
         {
             InitializeComponent();
+            AplicarTemaBaseDatos();
+
         }
 
         private void VistaBaseDatos_Load(object sender, EventArgs e)
         {
-
-
+            AplicarTemaBaseDatos();
         }
 
         // Carga todos los archivos de la BD en la tabla
@@ -262,6 +263,103 @@ namespace MediaCenter.Vistas
             }
 
         }
+
+
+
+        private void AplicarTemaBaseDatos()
+        {
+            this.BackColor = UITheme.ContentBg;
+
+            // ── DATAGRIDVIEW ─────────────────────────────────
+            dgvArchivos.BackgroundColor = Color.FromArgb(10, 22, 40);
+            dgvArchivos.GridColor = UITheme.DividerLine;
+            dgvArchivos.BorderStyle = BorderStyle.None;
+            dgvArchivos.RowHeadersVisible = false;          // oculta la columna gris de la izq
+            dgvArchivos.EnableHeadersVisualStyles = false;
+
+            // Encabezados de columna
+            dgvArchivos.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(13, 71, 161);
+            dgvArchivos.ColumnHeadersDefaultCellStyle.ForeColor = UITheme.TextPrimary;
+            dgvArchivos.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
+            dgvArchivos.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(13, 71, 161);
+            dgvArchivos.ColumnHeadersHeight = 38;
+
+            // Filas normales
+            dgvArchivos.DefaultCellStyle.BackColor = Color.FromArgb(10, 22, 40);
+            dgvArchivos.DefaultCellStyle.ForeColor = UITheme.TextSecondary;
+            dgvArchivos.DefaultCellStyle.SelectionBackColor = UITheme.SidebarActive;
+            dgvArchivos.DefaultCellStyle.SelectionForeColor = UITheme.TextPrimary;
+            dgvArchivos.DefaultCellStyle.Font = new Font("Segoe UI", 9.5f);
+            dgvArchivos.RowTemplate.Height = 30;
+
+            // Filas alternadas (efecto zebra sutil)
+            dgvArchivos.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(13, 31, 60);
+
+            // ── BOTONES ──────────────────────────────────────
+            EstilarBoton(btnImportarCSV, "  📥  Importar CSV", Color.FromArgb(13, 71, 161));
+            EstilarBoton(btnExportarCSV, "  📤  Exportar CSV", Color.FromArgb(13, 71, 161));
+            EstilarBoton(btnNuevo, "  ➕  Nuevo", UITheme.SidebarActive);
+            EstilarBoton(btnEliminar, "  🗑️  Eliminar", Color.FromArgb(140, 30, 30));
+            EstilarBoton(btnRecargar, "  🔄  Recargar", Color.FromArgb(13, 71, 161));
+            EstilarBoton(btnModificar, "  ✏️  Modificar", Color.FromArgb(13, 71, 161));
+
+
+            // Asegura que los botones sean suficientemente anchos
+            foreach (Button btn in new[] { btnImportarCSV, btnExportarCSV,
+                                 btnNuevo, btnEliminar,
+                                 btnRecargar, btnModificar })
+            {
+                btn.AutoSize = false;
+                btn.Width = 140;
+                btn.Height = 36;
+                btn.TextAlign = ContentAlignment.MiddleLeft;
+                btn.Padding = new Padding(8, 0, 0, 0);
+            }
+
+            // Separar los botones con espacio entre ellos
+            int xActual = btnImportarCSV.Left;
+            int espacio = 10; // espacio entre botones
+
+            foreach (Button btn in new[] { btnImportarCSV, btnExportarCSV,
+                                 btnNuevo, btnEliminar,
+                                 btnRecargar, btnModificar })
+            {
+                btn.Left = xActual;
+                xActual += btn.Width + espacio;
+            }
+
+
+        }
+
+        private void EstilarBoton(Button btn, string texto, Color colorFondo)
+        {
+            btn.Text = texto;
+            btn.BackColor = colorFondo;
+            btn.ForeColor = UITheme.TextPrimary;
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.MouseOverBackColor =
+                Color.FromArgb(
+                    Math.Min(colorFondo.R + 20, 255),
+                    Math.Min(colorFondo.G + 20, 255),
+                    Math.Min(colorFondo.B + 20, 255));
+            btn.Font = new Font("Segoe UI", 10f);
+            btn.Cursor = Cursors.Hand;
+            btn.Height = 36;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

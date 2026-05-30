@@ -33,6 +33,7 @@
             lstVideos = new ListBox();
             wmVideo = new AxWMPLib.AxWindowsMediaPlayer();
             lblInfoVideo = new Label();
+            btnImportarCarpeta = new Button();
             ((System.ComponentModel.ISupportInitialize)wmVideo).BeginInit();
             SuspendLayout();
             // 
@@ -74,11 +75,22 @@
             lblInfoVideo.TabIndex = 3;
             lblInfoVideo.Text = "Selecciona un video";
             // 
+            // btnImportarCarpeta
+            // 
+            btnImportarCarpeta.Location = new Point(302, 18);
+            btnImportarCarpeta.Name = "btnImportarCarpeta";
+            btnImportarCarpeta.Size = new Size(94, 29);
+            btnImportarCarpeta.TabIndex = 4;
+            btnImportarCarpeta.Text = "Importar Carpeta";
+            btnImportarCarpeta.UseVisualStyleBackColor = true;
+            btnImportarCarpeta.Click += btnImportarCarpeta_Click;
+            // 
             // VistaVideos
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
+            Controls.Add(btnImportarCarpeta);
             Controls.Add(lblInfoVideo);
             Controls.Add(wmVideo);
             Controls.Add(lstVideos);
@@ -96,5 +108,6 @@
         private ListBox lstVideos;
         private AxWMPLib.AxWindowsMediaPlayer wmVideo;
         private Label lblInfoVideo;
+        private Button btnImportarCarpeta;
     }
 }

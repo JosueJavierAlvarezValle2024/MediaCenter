@@ -30,6 +30,7 @@
         {
             toolStrip1 = new ToolStrip();
             panelMenu = new Panel();
+            btnInicio = new Button();
             lblTitulo = new Label();
             btnBaseDatos = new Button();
             btnMusica = new Button();
@@ -45,13 +46,14 @@
             toolStrip1.ImageScalingSize = new Size(20, 20);
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(1346, 25);
+            toolStrip1.Size = new Size(1401, 25);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "MediaCenter - Gestor Multimedia Personal";
             // 
             // panelMenu
             // 
             panelMenu.BackColor = Color.FromArgb(44, 62, 80);
+            panelMenu.Controls.Add(btnInicio);
             panelMenu.Controls.Add(lblTitulo);
             panelMenu.Controls.Add(btnBaseDatos);
             panelMenu.Controls.Add(btnMusica);
@@ -61,8 +63,19 @@
             panelMenu.Dock = DockStyle.Left;
             panelMenu.Location = new Point(0, 25);
             panelMenu.Name = "panelMenu";
-            panelMenu.Size = new Size(200, 768);
+            panelMenu.Size = new Size(200, 848);
             panelMenu.TabIndex = 1;
+            // 
+            // btnInicio
+            // 
+            btnInicio.Dock = DockStyle.Top;
+            btnInicio.Location = new Point(0, 0);
+            btnInicio.Name = "btnInicio";
+            btnInicio.Size = new Size(200, 29);
+            btnInicio.TabIndex = 6;
+            btnInicio.Text = "Inicio";
+            btnInicio.UseVisualStyleBackColor = true;
+            btnInicio.Click += btnInicio_Click;
             // 
             // lblTitulo
             // 
@@ -157,20 +170,21 @@
             panelContenido.Dock = DockStyle.Fill;
             panelContenido.Location = new Point(200, 25);
             panelContenido.Name = "panelContenido";
-            panelContenido.Size = new Size(1146, 768);
+            panelContenido.Size = new Size(1201, 848);
             panelContenido.TabIndex = 2;
             // 
             // FormPrincipal
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1346, 793);
+            ClientSize = new Size(1401, 873);
             Controls.Add(panelContenido);
             Controls.Add(panelMenu);
             Controls.Add(toolStrip1);
             Name = "FormPrincipal";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Form1";
+            
             panelMenu.ResumeLayout(false);
             panelMenu.PerformLayout();
             ResumeLayout(false);
@@ -188,5 +202,6 @@
         private Button btnConfiguracion;
         private Button btnVideos;
         private Label lblTitulo;
+        private Button btnInicio;
     }
 }

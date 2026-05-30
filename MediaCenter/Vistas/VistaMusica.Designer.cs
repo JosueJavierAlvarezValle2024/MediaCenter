@@ -39,6 +39,7 @@
             btnNuevaLista = new Button();
             btnAgregarALista = new Button();
             btnVerLista = new Button();
+            btnImportarCarpeta = new Button();
             ((System.ComponentModel.ISupportInitialize)picCaratula).BeginInit();
             ((System.ComponentModel.ISupportInitialize)wmPlayer).BeginInit();
             SuspendLayout();
@@ -138,11 +139,22 @@
             btnVerLista.UseVisualStyleBackColor = true;
             btnVerLista.Click += btnVerLista_Click;
             // 
+            // btnImportarCarpeta
+            // 
+            btnImportarCarpeta.Location = new Point(281, 24);
+            btnImportarCarpeta.Name = "btnImportarCarpeta";
+            btnImportarCarpeta.Size = new Size(94, 29);
+            btnImportarCarpeta.TabIndex = 10;
+            btnImportarCarpeta.Text = "Importar Carpeta";
+            btnImportarCarpeta.UseVisualStyleBackColor = true;
+            btnImportarCarpeta.Click += btnImportarCarpeta_Click;
+            // 
             // VistaMusica
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
+            Controls.Add(btnImportarCarpeta);
             Controls.Add(btnVerLista);
             Controls.Add(btnAgregarALista);
             Controls.Add(btnNuevaLista);
@@ -173,5 +185,6 @@
         private Button btnNuevaLista;
         private Button btnAgregarALista;
         private Button btnVerLista;
+        private Button btnImportarCarpeta;
     }
 }

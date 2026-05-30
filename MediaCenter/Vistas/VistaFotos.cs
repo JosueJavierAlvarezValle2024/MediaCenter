@@ -1,4 +1,5 @@
 ﻿using MediaCenter.Servicios;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Drawing;
 using System.IO;
@@ -11,61 +12,71 @@ namespace MediaCenter.Vistas
 {
     public partial class VistaFotos : UserControl
     {
+        // Evento que avisa al FormPrincipal cuando se agrega una foto
+        public event EventHandler ArchivoAgregado;
         public VistaFotos()
         {
             InitializeComponent();
+
         }
+
 
         private void btnAgregarFoto_Click(object sender, EventArgs e)
         {
-            // Crear el diálogo para seleccionar archivos
             OpenFileDialog dialogo = new OpenFileDialog();
             dialogo.Filter = "Imágenes|*.jpg;*.jpeg;*.png;*.bmp";
             dialogo.Multiselect = true;
 
-            // Si el usuario eligió fotos y presionó OK
             if (dialogo.ShowDialog() == DialogResult.OK)
             {
-                // Contadores para el resumen final
                 int agregadas = 0;
                 int rechazadas = 0;
+                int duplicadas = 0;
                 string listaRechazos = "";
 
-                // Revisar cada foto antes de agregarla
                 foreach (string ruta in dialogo.FileNames)
                 {
                     string mensajeError;
 
-                    // El validador revisa si es imagen real
                     if (ValidarArchivos.EsImagenValida(ruta, out mensajeError))
                     {
-                        // Paso la prueba: agregar a la lista
+                        // ── Verificar duplicado ──────────────────────
+                        if (ArchivoYaExisteEnBD(ruta))
+                        {
+                            duplicadas++;
+                            continue; // saltar, ya existe
+                        }
+
                         lstFotos.Items.Add(ruta);
+                        GuardarArchivoEnBD(ruta, "Foto");
+                        ArchivoAgregado?.Invoke(this, EventArgs.Empty);
                         agregadas++;
                     }
                     else
                     {
-                        // No paso: contar y guardar el motivo
                         rechazadas++;
-                        listaRechazos += "- " + Path.GetFileName(ruta) + " -> " + mensajeError + Environment.NewLine;
+                        listaRechazos += "- " + Path.GetFileName(ruta) +
+                                         " → " + mensajeError + Environment.NewLine;
                     }
                 }
 
-                // Resumen final al usuario (solo si hubo rechazos)
-                if (rechazadas > 0)
+                // Resumen solo si hubo algo que reportar
+                if (rechazadas > 0 || duplicadas > 0)
                 {
                     MessageBox.Show(
-                        "Resultado:" + Environment.NewLine +
-                        "Agregadas: " + agregadas + Environment.NewLine +
-                        "Rechazadas: " + rechazadas + Environment.NewLine + Environment.NewLine +
-                        "Archivos rechazados:" + Environment.NewLine + listaRechazos,
-                        "Archivos corruptos detectados",
+                        $"Resultado:{Environment.NewLine}" +
+                        $"✅ Agregadas:   {agregadas}{Environment.NewLine}" +
+                        $"⚠️ Duplicadas:  {duplicadas}{Environment.NewLine}" +
+                        $"❌ Rechazadas:  {rechazadas}{Environment.NewLine}" +
+                        (listaRechazos != "" ? Environment.NewLine +
+                         "Archivos rechazados:" + Environment.NewLine + listaRechazos : ""),
+                        "Resultado de importación",
                         MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                        MessageBoxIcon.Information);
                 }
             }
-        }
 
+        }
 
 
 
@@ -359,6 +370,286 @@ namespace MediaCenter.Vistas
             return resultado;
         }
 
-        
+        private void VistaFotos_Load(object sender, EventArgs e)
+        {
+            AplicarTemaFotos(); // ← agrega esta línea
+            CargarFotosDesdeDB(); // ← agrega esta línea
+
+        }
+
+        private void AplicarTemaFotos()
+        {
+            // ── FONDO DEL USERCONTROL ────────────────────────
+            this.BackColor = UITheme.ContentBg;
+
+            // ── LISTBOX DE FOTOS ─────────────────────────────
+            // El fondo oscuro, texto claro, sin borde blanco
+            lstFotos.BackColor = Color.FromArgb(10, 22, 40);    // azul muy oscuro
+            lstFotos.ForeColor = UITheme.TextSecondary;
+            lstFotos.BorderStyle = BorderStyle.None;
+            lstFotos.Font = new Font("Segoe UI", 10f);
+            lstFotos.ItemHeight = 28;                            // renglones más cómodos
+
+            // ── PICTUREBOX VISOR ─────────────────────────────
+            picVisor.BackColor = Color.FromArgb(6, 14, 26);     // negro azulado
+            picVisor.BorderStyle = BorderStyle.None;
+            picVisor.SizeMode = PictureBoxSizeMode.Zoom;       // la foto se ajusta sin distorsión
+
+            // ── ETIQUETA DE INFORMACIÓN GPS ──────────────────
+            lblInfoFoto.BackColor = Color.FromArgb(10, 22, 40);
+            lblInfoFoto.ForeColor = UITheme.TextSecondary;
+            lblInfoFoto.Font = new Font("Segoe UI", 9.5f);
+            lblInfoFoto.BorderStyle = BorderStyle.None;
+
+            // ── BOTÓN AGREGAR FOTO ───────────────────────────
+            EstilarBoton(btnAgregarFoto, "  📷  Agregar Foto", UITheme.SidebarActive);
+
+            // ── BOTÓN EDITAR GPS ─────────────────────────────
+            EstilarBoton(btnEditarGPS, "  📍  Editar GPS", Color.FromArgb(13, 71, 161));
+
+
+            // Bajar el botón para que no tape la barra superior
+            // Ajusta el Y según lo que veas en tu diseñador
+            //btnAgregarFoto.Location = new Point(btnAgregarFoto.Location.X,
+            //                                     btnAgregarFoto.Location.Y + 55);
+
+            // Espacio superior para no tapar el TopBar del FormPrincipal
+            this.Padding = new Padding(0, 8, 0, 0);
+
+
+            // Panel contenedor alrededor del ListBox para simular borde
+            Panel pnlListaBorde = new Panel();
+            pnlListaBorde.BackColor = Color.FromArgb(26, 48, 80);  // azul borde
+            pnlListaBorde.Bounds = new Rectangle(
+                lstFotos.Left - 1,
+                lstFotos.Top - 1,
+                lstFotos.Width + 2,
+                lstFotos.Height + 2);
+            pnlListaBorde.Controls.Add(lstFotos);
+
+            // Reubicar el ListBox dentro del panel
+            lstFotos.Location = new Point(1, 1);
+            lstFotos.Width = pnlListaBorde.Width - 2;
+            lstFotos.Height = pnlListaBorde.Height - 2;
+
+            this.Controls.Add(pnlListaBorde);
+            pnlListaBorde.BringToFront(); // que no quede detrás de otros controles
+
+           
+
+            // Mensaje cuando el ListBox está vacío
+            lstFotos.DrawMode = DrawMode.OwnerDrawFixed;
+            lstFotos.DrawItem += (s, e) =>
+            {
+                if (lstFotos.Items.Count == 0)
+                {
+                    e.Graphics.DrawString(
+                        "  Sin fotos cargadas",
+                        new Font("Segoe UI", 9f, FontStyle.Italic),
+                        new SolidBrush(UITheme.TextMuted),
+                        e.Bounds);
+                    return;
+                }
+                e.DrawBackground();
+                if (e.Index >= 0)
+                {
+                    bool seleccionado = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+                    e.Graphics.FillRectangle(
+                        new SolidBrush(seleccionado ? UITheme.SidebarActive : lstFotos.BackColor),
+                        e.Bounds);
+                    e.Graphics.DrawString(
+                        lstFotos.Items[e.Index].ToString(),
+                        lstFotos.Font,
+                        new SolidBrush(seleccionado ? Color.White : UITheme.TextSecondary),
+                        e.Bounds.X + 8, e.Bounds.Y + 6);
+                }
+            };
+
+
+            // Posicionar botón Importar junto a Agregar
+            btnImportarCarpeta.Location = new Point(
+                btnAgregarFoto.Left + btnAgregarFoto.Width + 10,
+                btnAgregarFoto.Top);
+            btnImportarCarpeta.Size = btnAgregarFoto.Size;
+            EstilarBoton(btnImportarCarpeta, "  📂  Importar Carpeta",
+                         Color.FromArgb(13, 71, 161));
+
+        }
+
+        // ── MÉTODO REUTILIZABLE para estilizar cualquier botón ──
+        // Lo ponemos aquí pero también lo usaremos en las otras vistas
+        private void EstilarBoton(Button btn, string texto, Color colorFondo)
+        {
+            btn.Text = texto;
+            btn.BackColor = colorFondo;
+            btn.ForeColor = UITheme.TextPrimary;
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.MouseOverBackColor =
+                Color.FromArgb(
+                    Math.Min(colorFondo.R + 20, 255),
+                    Math.Min(colorFondo.G + 20, 255),
+                    Math.Min(colorFondo.B + 20, 255));  // un poco más claro al hacer hover
+            btn.Font = new Font("Segoe UI", 10f, FontStyle.Regular);
+            btn.Cursor = Cursors.Hand;
+            btn.Height = 36;
+        }
+
+
+
+        private void GuardarArchivoEnBD(string rutaCompleta, string tipo)
+        {
+            try
+            {
+                // Datos que extraemos del archivo
+                string nombre = Path.GetFileName(rutaCompleta);
+                string extension = Path.GetExtension(rutaCompleta).TrimStart('.');
+                long tamanoKB = new FileInfo(rutaCompleta).Length / 1024;
+
+                // Consulta SQL para insertar el archivo
+                string sql = @"INSERT INTO dbo.Archivos 
+                       (Nombre, RutaCompleta, Tipo, Extension, TamanoKB, FechaAgregado, Estacorrupto)
+                       VALUES 
+                       (@nombre, @ruta, @tipo, @extension, @tamano, @fecha, 0)";
+
+                using (var conn = Datos.ConexionSQL.ObtenerConexion())
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@nombre", nombre);
+                        cmd.Parameters.AddWithValue("@ruta", rutaCompleta);
+                        cmd.Parameters.AddWithValue("@tipo", tipo);
+                        cmd.Parameters.AddWithValue("@extension", extension);
+                        cmd.Parameters.AddWithValue("@tamano", tamanoKB);
+                        cmd.Parameters.AddWithValue("@fecha", DateTime.Now);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al guardar en BD: " + ex.Message,
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnImportarCarpeta_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog dialogo = new FolderBrowserDialog();
+            dialogo.Description = "Selecciona la carpeta con tus fotos";
+
+            if (dialogo.ShowDialog() == DialogResult.OK)
+            {
+                string carpeta = dialogo.SelectedPath;
+
+                string[] extensiones = { "*.jpg", "*.jpeg", "*.png", "*.bmp" };
+                List<string> archivos = new List<string>();
+
+                foreach (string ext in extensiones)
+                    archivos.AddRange(Directory.GetFiles(carpeta, ext));
+
+                if (archivos.Count == 0)
+                {
+                    MessageBox.Show("No se encontraron imágenes en esa carpeta.",
+                                    "Sin archivos", MessageBoxButtons.OK,
+                                    MessageBoxIcon.Information);
+                    return;
+                }
+
+                int importadas = 0;
+                int rechazadas = 0;
+                int duplicadas = 0; // ← nuevo
+                string listaRechazos = "";
+
+                foreach (string ruta in archivos)
+                {
+                    string mensajeError;
+                    if (ValidarArchivos.EsImagenValida(ruta, out mensajeError))
+                    {
+                        // ── Verificar duplicado ──────────────────
+                        if (ArchivoYaExisteEnBD(ruta))
+                        {
+                            duplicadas++;
+                            continue; // saltar, ya existe
+                        }
+
+                        lstFotos.Items.Add(ruta);
+                        GuardarArchivoEnBD(ruta, "Foto");
+                        importadas++;
+                    }
+                    else
+                    {
+                        rechazadas++;
+                        listaRechazos += "- " + Path.GetFileName(ruta) +
+                                         " → " + mensajeError + Environment.NewLine;
+                    }
+                }
+
+                ArchivoAgregado?.Invoke(this, EventArgs.Empty);
+
+                MessageBox.Show(
+                    $"Importación completada:{Environment.NewLine}" +
+                    $"✅ Importadas:  {importadas}{Environment.NewLine}" +
+                    $"⚠️ Duplicadas:  {duplicadas}{Environment.NewLine}" +
+                    $"❌ Rechazadas:  {rechazadas}" +
+                    (listaRechazos != "" ? Environment.NewLine + Environment.NewLine +
+                     "Archivos rechazados:" + Environment.NewLine + listaRechazos : ""),
+                    "Importar Carpeta",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+
+        }
+
+        private void CargarFotosDesdeDB()
+        {
+            lstFotos.Items.Clear();
+
+            string connStr = "Server=HPCOMPUTER18\\SQLEXPRESS01;" +
+                             "Database=MediaCenterDB;" +
+                             "Integrated Security=True;" +
+                             "TrustServerCertificate=True;";
+
+            var servicio = new MediaCenter.Servicios.EstadisticasServicio(connStr);
+            var fotos = servicio.ObtenerArchivosPorTipo("Foto");
+
+            foreach (var foto in fotos)
+            {
+                // Solo mostrar si el archivo todavía existe en el disco
+                if (File.Exists(foto.RutaCompleta))
+                    lstFotos.Items.Add(foto.RutaCompleta);
+                else
+                    lstFotos.Items.Add("⚠️ " + foto.Nombre + " (no encontrado)");
+            }
+        }
+
+        private bool ArchivoYaExisteEnBD(string rutaCompleta)
+        {
+            string connStr = "Server=HPCOMPUTER18\\SQLEXPRESS01;" +
+                             "Database=MediaCenterDB;" +
+                             "Integrated Security=True;" +
+                             "TrustServerCertificate=True;";
+
+            using (var conn = MediaCenter.Datos.ConexionSQL.ObtenerConexion())
+            {
+                conn.Open();
+                string sql = "SELECT COUNT(*) FROM dbo.Archivos WHERE RutaCompleta = @ruta";
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@ruta", rutaCompleta);
+                    return (int)cmd.ExecuteScalar() > 0;
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
     }
 }

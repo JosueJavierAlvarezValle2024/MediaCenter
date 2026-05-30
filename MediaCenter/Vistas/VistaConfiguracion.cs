@@ -10,6 +10,8 @@ namespace MediaCenter.Vistas
         {
             InitializeComponent();
             MostrarCadenaConexion();
+            AplicarTemaConfiguracion(); // ← agrega esta línea
+
         }
 
         private void MostrarCadenaConexion()
@@ -67,6 +69,93 @@ namespace MediaCenter.Vistas
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
+
+
+
+
+
+
+
+        private void AplicarTemaConfiguracion()
+        {
+            // ── FONDO PRINCIPAL ──────────────────────────────
+            this.BackColor = UITheme.ContentBg;
+
+            // ── TÍTULO ───────────────────────────────────────
+            lblTitulo.ForeColor = UITheme.TextPrimary;
+            lblTitulo.BackColor = UITheme.ContentBg;
+
+            // ── GROUPBOX ESTADÍSTICAS ────────────────────────
+            EstilarGroupBox(gbEstadisticas);
+
+            lblFotos.ForeColor = UITheme.TextSecondary;
+            lblFotos.BackColor = Color.Transparent;
+            lblMusica.ForeColor = UITheme.TextSecondary;
+            lblMusica.BackColor = Color.Transparent;
+            lblVideos.ForeColor = UITheme.TextSecondary;
+            lblVideos.BackColor = Color.Transparent;
+
+            // Total en azul brillante para destacarlo
+            lblTotal.ForeColor = UITheme.AccentBlue;
+            lblTotal.BackColor = Color.Transparent;
+
+            EstilarBoton(btnActualizar, "  🔄  Actualizar estadísticas", UITheme.SidebarActive);
+
+            // ── GROUPBOX CONEXIÓN SQL ────────────────────────
+            EstilarGroupBox(gbConexion);
+
+            lblConexion.ForeColor = UITheme.TextMuted;
+            lblConexion.BackColor = Color.Transparent;
+            lblConexion.Font = new Font("Segoe UI", 9f);
+
+            // ── BOTÓN ACERCA DE ──────────────────────────────
+            EstilarBoton(btnAcercaDe, "  ℹ️  Acerca de", Color.FromArgb(13, 71, 161));
+        }
+
+        // ── Estilo para GroupBox ─────────────────────────────
+        private void EstilarGroupBox(GroupBox gb)
+        {
+            gb.ForeColor = UITheme.AccentBlue;   // color del título del groupbox
+            gb.BackColor = Color.FromArgb(10, 22, 40);
+            gb.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
+
+            // Aplicar fondo oscuro a los controles hijos del GroupBox
+            foreach (Control ctrl in gb.Controls)
+            {
+                ctrl.BackColor = Color.Transparent;
+                if (ctrl is Label lbl)
+                    lbl.ForeColor = UITheme.TextSecondary;
+            }
+        }
+
+        private void EstilarBoton(Button btn, string texto, Color colorFondo)
+        {
+            btn.Text = texto;
+            btn.BackColor = colorFondo;
+            btn.ForeColor = UITheme.TextPrimary;
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.MouseOverBackColor =
+                Color.FromArgb(
+                    Math.Min(colorFondo.R + 20, 255),
+                    Math.Min(colorFondo.G + 20, 255),
+                    Math.Min(colorFondo.B + 20, 255));
+            btn.Font = new Font("Segoe UI", 10f);
+            btn.Cursor = Cursors.Hand;
+            btn.Height = 36;
+        }
+
+
+
+
+
+
+
+
+
+
     }
 }
 

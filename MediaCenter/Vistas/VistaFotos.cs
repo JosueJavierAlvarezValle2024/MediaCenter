@@ -12,7 +12,7 @@ namespace MediaCenter.Vistas
 {
     public partial class VistaFotos : UserControl
     {
-        // Evento que avisa al FormPrincipal cuando se agrega una foto
+        
         public event EventHandler ArchivoAgregado;
         public VistaFotos()
         {
@@ -40,11 +40,11 @@ namespace MediaCenter.Vistas
 
                     if (ValidarArchivos.EsImagenValida(ruta, out mensajeError))
                     {
-                        // ── Verificar duplicado ──────────────────────
+                        
                         if (ArchivoYaExisteEnBD(ruta))
                         {
                             duplicadas++;
-                            continue; // saltar, ya existe
+                            continue; 
                         }
 
                         lstFotos.Items.Add(ruta);
@@ -60,7 +60,7 @@ namespace MediaCenter.Vistas
                     }
                 }
 
-                // Resumen solo si hubo algo que reportar
+                
                 if (rechazadas > 0 || duplicadas > 0)
                 {
                     MessageBox.Show(
@@ -86,7 +86,7 @@ namespace MediaCenter.Vistas
 
             string ruta = lstFotos.SelectedItem.ToString();
 
-            // Verificar que el archivo sigue existiendo
+            
             if (!File.Exists(ruta))
             {
                 MessageBox.Show("El archivo ya no existe en:\n" + ruta,
@@ -96,7 +96,6 @@ namespace MediaCenter.Vistas
                 return;
             }
 
-            // Cargar imagen en el visor
             try
             {
                 picVisor.Image = Image.FromFile(ruta);
@@ -108,7 +107,6 @@ namespace MediaCenter.Vistas
                 return;
             }
 
-            // Leer metadatos GPS
             try
             {
                 string info = "Archivo: " + Path.GetFileName(ruta) + Environment.NewLine;
@@ -143,7 +141,6 @@ namespace MediaCenter.Vistas
             }
         }
 
-        // Método para extraer una coordenada (latitud o longitud) del EXIF
         private double? ObtenerCoordenada(Image img, int idCoord, int idRef)
         {
             try
@@ -151,7 +148,6 @@ namespace MediaCenter.Vistas
                 var propCoord = img.GetPropertyItem(idCoord);
                 var propRef = img.GetPropertyItem(idRef);
 
-                // Convertir los bytes del EXIF a grados decimales
                 uint gradosNum = BitConverter.ToUInt32(propCoord.Value, 0);
                 uint gradosDen = BitConverter.ToUInt32(propCoord.Value, 4);
                 uint minNum = BitConverter.ToUInt32(propCoord.Value, 8);
@@ -165,7 +161,6 @@ namespace MediaCenter.Vistas
 
                 double resultado = grados + (minutos / 60) + (segundos / 3600);
 
-                // Si la referencia es S (sur) o W (oeste), el valor es negativo
                 char referencia = (char)propRef.Value[0];
                 if (referencia == 'S' || referencia == 'W')
                     resultado = -resultado;
@@ -179,8 +174,7 @@ namespace MediaCenter.Vistas
         }
 
 
-        // Método para obtener el nombre del lugar a partir de coordenadas
-        // Usa la API gratuita de OpenStreetMap (Nominatim)
+        
         private async Task<string> ObtenerNombreLugarAsync(double lat, double lon)
         {
             try
@@ -207,16 +201,15 @@ namespace MediaCenter.Vistas
             }
         }
 
-        // Método para mostrar el mapa en el WebView2
         private async void MostrarMapa(double lat, double lon)
         {
             try
             {
-                // Inicializar WebView2 si no está listo
+                
                 if (webMapa.CoreWebView2 == null)
                     await webMapa.EnsureCoreWebView2Async();
 
-                // Construir el HTML con el mapa de OpenStreetMap
+                
                 string html = $@"
         <!DOCTYPE html>
         <html>
@@ -253,21 +246,18 @@ namespace MediaCenter.Vistas
 
             string ruta = lstFotos.SelectedItem.ToString();
 
-            // Pedir nueva latitud
             string latStr = Microsoft.VisualBasic.Interaction.InputBox(
                 "Ingresa la nueva LATITUD (ejemplo: 25.432100):",
                 "Editar coordenadas", "0.0");
 
             if (string.IsNullOrEmpty(latStr)) return;
 
-            // Pedir nueva longitud
             string lonStr = Microsoft.VisualBasic.Interaction.InputBox(
                 "Ingresa la nueva LONGITUD (ejemplo: -100.987600):",
                 "Editar coordenadas", "0.0");
 
             if (string.IsNullOrEmpty(lonStr)) return;
 
-            // Validar que sean números
             if (!double.TryParse(latStr, System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture, out double nuevaLat) ||
                 !double.TryParse(lonStr, System.Globalization.NumberStyles.Any,
@@ -277,29 +267,24 @@ namespace MediaCenter.Vistas
                 return;
             }
 
-            // Guardar nuevas coordenadas
             GuardarCoordenadas(ruta, nuevaLat, nuevaLon);
 
             MessageBox.Show("Coordenadas actualizadas. Vuelve a seleccionar la foto para ver el cambio.");
         }
 
-        // Método para guardar nuevas coordenadas GPS en una foto
         private void GuardarCoordenadas(string ruta, double lat, double lon)
         {
-            // Cargar la imagen en memoria (sin bloquear el archivo)
             byte[] bytesOriginales = File.ReadAllBytes(ruta);
 
             using (MemoryStream ms = new MemoryStream(bytesOriginales))
             using (Image img = Image.FromStream(ms))
             {
-                // Liberar la imagen del visor para no bloquear el archivo
                 if (picVisor.Image != null)
                 {
                     picVisor.Image.Dispose();
                     picVisor.Image = null;
                 }
 
-                // Crear propiedades EXIF
                 var propLatRef = (System.Drawing.Imaging.PropertyItem)System.Runtime.Serialization.FormatterServices
                     .GetUninitializedObject(typeof(System.Drawing.Imaging.PropertyItem));
                 var propLat = (System.Drawing.Imaging.PropertyItem)System.Runtime.Serialization.FormatterServices
@@ -309,43 +294,36 @@ namespace MediaCenter.Vistas
                 var propLon = (System.Drawing.Imaging.PropertyItem)System.Runtime.Serialization.FormatterServices
                     .GetUninitializedObject(typeof(System.Drawing.Imaging.PropertyItem));
 
-                // Referencia de latitud (N o S)
                 propLatRef.Id = 0x0001;
                 propLatRef.Type = 2;
                 propLatRef.Value = new byte[] { (byte)(lat >= 0 ? 'N' : 'S'), 0 };
                 propLatRef.Len = 2;
 
-                // Valor de latitud
                 propLat.Id = 0x0002;
                 propLat.Type = 5;
                 propLat.Value = ConvertirAGradosEXIF(Math.Abs(lat));
                 propLat.Len = 24;
 
-                // Referencia de longitud (E o W)
                 propLonRef.Id = 0x0003;
                 propLonRef.Type = 2;
                 propLonRef.Value = new byte[] { (byte)(lon >= 0 ? 'E' : 'W'), 0 };
                 propLonRef.Len = 2;
 
-                // Valor de longitud
                 propLon.Id = 0x0004;
                 propLon.Type = 5;
                 propLon.Value = ConvertirAGradosEXIF(Math.Abs(lon));
                 propLon.Len = 24;
 
-                // Agregar las propiedades a la imagen
                 img.SetPropertyItem(propLatRef);
                 img.SetPropertyItem(propLat);
                 img.SetPropertyItem(propLonRef);
                 img.SetPropertyItem(propLon);
 
-                // Guardar la imagen modificada
                 img.Save(ruta);
             }
         }
 
 
-        // Convierte un valor decimal a formato EXIF (grados/minutos/segundos en bytes)
         private byte[] ConvertirAGradosEXIF(double valor)
         {
             int grados = (int)valor;
@@ -355,7 +333,6 @@ namespace MediaCenter.Vistas
 
             byte[] resultado = new byte[24];
 
-            // Grados (numerador/denominador)
             BitConverter.GetBytes((uint)grados).CopyTo(resultado, 0);
             BitConverter.GetBytes((uint)1).CopyTo(resultado, 4);
 
@@ -379,47 +356,34 @@ namespace MediaCenter.Vistas
 
         private void AplicarTemaFotos()
         {
-            // ── FONDO DEL USERCONTROL ────────────────────────
+            
             this.BackColor = UITheme.ContentBg;
 
-            // ── LISTBOX DE FOTOS ─────────────────────────────
-            // El fondo oscuro, texto claro, sin borde blanco
-            lstFotos.BackColor = Color.FromArgb(10, 22, 40);    // azul muy oscuro
+            lstFotos.BackColor = Color.FromArgb(10, 22, 40);    
             lstFotos.ForeColor = UITheme.TextSecondary;
             lstFotos.BorderStyle = BorderStyle.None;
             lstFotos.Font = new Font("Segoe UI", 10f);
-            lstFotos.ItemHeight = 28;                            // renglones más cómodos
+            lstFotos.ItemHeight = 28;                            
 
-            // ── PICTUREBOX VISOR ─────────────────────────────
-            picVisor.BackColor = Color.FromArgb(6, 14, 26);     // negro azulado
+            picVisor.BackColor = Color.FromArgb(6, 14, 26);    
             picVisor.BorderStyle = BorderStyle.None;
-            picVisor.SizeMode = PictureBoxSizeMode.Zoom;       // la foto se ajusta sin distorsión
+            picVisor.SizeMode = PictureBoxSizeMode.Zoom;       
 
-            // ── ETIQUETA DE INFORMACIÓN GPS ──────────────────
             lblInfoFoto.BackColor = Color.FromArgb(10, 22, 40);
             lblInfoFoto.ForeColor = UITheme.TextSecondary;
             lblInfoFoto.Font = new Font("Segoe UI", 9.5f);
             lblInfoFoto.BorderStyle = BorderStyle.None;
 
-            // ── BOTÓN AGREGAR FOTO ───────────────────────────
             EstilarBoton(btnAgregarFoto, "  📷  Agregar Foto", UITheme.SidebarActive);
 
-            // ── BOTÓN EDITAR GPS ─────────────────────────────
             EstilarBoton(btnEditarGPS, "  📍  Editar GPS", Color.FromArgb(13, 71, 161));
 
 
-            // Bajar el botón para que no tape la barra superior
-            // Ajusta el Y según lo que veas en tu diseñador
-            //btnAgregarFoto.Location = new Point(btnAgregarFoto.Location.X,
-            //                                     btnAgregarFoto.Location.Y + 55);
-
-            // Espacio superior para no tapar el TopBar del FormPrincipal
             this.Padding = new Padding(0, 8, 0, 0);
 
 
-            // Panel contenedor alrededor del ListBox para simular borde
             Panel pnlListaBorde = new Panel();
-            pnlListaBorde.BackColor = Color.FromArgb(26, 48, 80);  // azul borde
+            pnlListaBorde.BackColor = Color.FromArgb(26, 48, 80); 
             pnlListaBorde.Bounds = new Rectangle(
                 lstFotos.Left - 1,
                 lstFotos.Top - 1,
@@ -427,17 +391,16 @@ namespace MediaCenter.Vistas
                 lstFotos.Height + 2);
             pnlListaBorde.Controls.Add(lstFotos);
 
-            // Reubicar el ListBox dentro del panel
             lstFotos.Location = new Point(1, 1);
             lstFotos.Width = pnlListaBorde.Width - 2;
             lstFotos.Height = pnlListaBorde.Height - 2;
 
             this.Controls.Add(pnlListaBorde);
-            pnlListaBorde.BringToFront(); // que no quede detrás de otros controles
+            pnlListaBorde.BringToFront(); 
 
            
 
-            // Mensaje cuando el ListBox está vacío
+            
             lstFotos.DrawMode = DrawMode.OwnerDrawFixed;
             lstFotos.DrawItem += (s, e) =>
             {
@@ -466,7 +429,6 @@ namespace MediaCenter.Vistas
             };
 
 
-            // Posicionar botón Importar junto a Agregar
             btnImportarCarpeta.Location = new Point(
                 btnAgregarFoto.Left + btnAgregarFoto.Width + 10,
                 btnAgregarFoto.Top);
@@ -476,8 +438,7 @@ namespace MediaCenter.Vistas
 
         }
 
-        // ── MÉTODO REUTILIZABLE para estilizar cualquier botón ──
-        // Lo ponemos aquí pero también lo usaremos en las otras vistas
+        
         private void EstilarBoton(Button btn, string texto, Color colorFondo)
         {
             btn.Text = texto;
@@ -489,7 +450,7 @@ namespace MediaCenter.Vistas
                 Color.FromArgb(
                     Math.Min(colorFondo.R + 20, 255),
                     Math.Min(colorFondo.G + 20, 255),
-                    Math.Min(colorFondo.B + 20, 255));  // un poco más claro al hacer hover
+                    Math.Min(colorFondo.B + 20, 255));  
             btn.Font = new Font("Segoe UI", 10f, FontStyle.Regular);
             btn.Cursor = Cursors.Hand;
             btn.Height = 36;
@@ -501,12 +462,10 @@ namespace MediaCenter.Vistas
         {
             try
             {
-                // Datos que extraemos del archivo
                 string nombre = Path.GetFileName(rutaCompleta);
                 string extension = Path.GetExtension(rutaCompleta).TrimStart('.');
                 long tamanoKB = new FileInfo(rutaCompleta).Length / 1024;
 
-                // Consulta SQL para insertar el archivo
                 string sql = @"INSERT INTO dbo.Archivos 
                        (Nombre, RutaCompleta, Tipo, Extension, TamanoKB, FechaAgregado, Estacorrupto)
                        VALUES 
@@ -559,7 +518,7 @@ namespace MediaCenter.Vistas
 
                 int importadas = 0;
                 int rechazadas = 0;
-                int duplicadas = 0; // ← nuevo
+                int duplicadas = 0; 
                 string listaRechazos = "";
 
                 foreach (string ruta in archivos)
@@ -567,11 +526,10 @@ namespace MediaCenter.Vistas
                     string mensajeError;
                     if (ValidarArchivos.EsImagenValida(ruta, out mensajeError))
                     {
-                        // ── Verificar duplicado ──────────────────
                         if (ArchivoYaExisteEnBD(ruta))
                         {
                             duplicadas++;
-                            continue; // saltar, ya existe
+                            continue; 
                         }
 
                         lstFotos.Items.Add(ruta);
@@ -616,7 +574,6 @@ namespace MediaCenter.Vistas
 
             foreach (var foto in fotos)
             {
-                // Solo mostrar si el archivo todavía existe en el disco
                 if (File.Exists(foto.RutaCompleta))
                     lstFotos.Items.Add(foto.RutaCompleta);
                 else
@@ -642,14 +599,6 @@ namespace MediaCenter.Vistas
                 }
             }
         }
-
-
-
-
-
-
-
-
 
     }
 }

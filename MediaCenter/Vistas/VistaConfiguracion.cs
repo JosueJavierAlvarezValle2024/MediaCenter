@@ -10,7 +10,7 @@ namespace MediaCenter.Vistas
         {
             InitializeComponent();
             MostrarCadenaConexion();
-            AplicarTemaConfiguracion(); // ← agrega esta línea
+            AplicarTemaConfiguracion(); 
 
         }
 
@@ -71,23 +71,13 @@ namespace MediaCenter.Vistas
         }
 
 
-
-
-
-
-
-
-
         private void AplicarTemaConfiguracion()
         {
-            // ── FONDO PRINCIPAL ──────────────────────────────
             this.BackColor = UITheme.ContentBg;
 
-            // ── TÍTULO ───────────────────────────────────────
             lblTitulo.ForeColor = UITheme.TextPrimary;
             lblTitulo.BackColor = UITheme.ContentBg;
 
-            // ── GROUPBOX ESTADÍSTICAS ────────────────────────
             EstilarGroupBox(gbEstadisticas);
 
             lblFotos.ForeColor = UITheme.TextSecondary;
@@ -97,31 +87,27 @@ namespace MediaCenter.Vistas
             lblVideos.ForeColor = UITheme.TextSecondary;
             lblVideos.BackColor = Color.Transparent;
 
-            // Total en azul brillante para destacarlo
             lblTotal.ForeColor = UITheme.AccentBlue;
             lblTotal.BackColor = Color.Transparent;
 
             EstilarBoton(btnActualizar, "  🔄  Actualizar estadísticas", UITheme.SidebarActive);
 
-            // ── GROUPBOX CONEXIÓN SQL ────────────────────────
             EstilarGroupBox(gbConexion);
 
             lblConexion.ForeColor = UITheme.TextMuted;
             lblConexion.BackColor = Color.Transparent;
             lblConexion.Font = new Font("Segoe UI", 9f);
 
-            // ── BOTÓN ACERCA DE ──────────────────────────────
             EstilarBoton(btnAcercaDe, "  ℹ️  Acerca de", Color.FromArgb(13, 71, 161));
         }
 
-        // ── Estilo para GroupBox ─────────────────────────────
         private void EstilarGroupBox(GroupBox gb)
         {
-            gb.ForeColor = UITheme.AccentBlue;   // color del título del groupbox
+            gb.ForeColor = UITheme.AccentBlue;   
             gb.BackColor = Color.FromArgb(10, 22, 40);
             gb.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
 
-            // Aplicar fondo oscuro a los controles hijos del GroupBox
+            
             foreach (Control ctrl in gb.Controls)
             {
                 ctrl.BackColor = Color.Transparent;

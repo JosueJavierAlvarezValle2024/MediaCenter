@@ -12,21 +12,17 @@ namespace MediaCenter.Servicios
 {
     internal class ValidarArchivos
     {
-        // ============================================================
-        // MÉTODO 1: Validar IMAGEN
-        // ============================================================
+        
         public static bool EsImagenValida(string ruta, out string mensajeError)
         {
             mensajeError = "";
 
-            // Validación básica: que exista
             if (!File.Exists(ruta))
             {
                 mensajeError = "El archivo no existe.";
                 return false;
             }
 
-            // Validación de tamaño: no debe estar vacío
             FileInfo info = new FileInfo(ruta);
             if (info.Length == 0)
             {
@@ -34,7 +30,6 @@ namespace MediaCenter.Servicios
                 return false;
             }
 
-            // Leemos los primeros bytes para revisar la "huella digital" (magic numbers)
             byte[] cabecera = LeerCabecera(ruta, 8);
             if (cabecera == null)
             {
@@ -42,7 +37,6 @@ namespace MediaCenter.Servicios
                 return false;
             }
 
-            // Verificamos magic numbers de los formatos de imagen comunes
             bool esJPG = cabecera[0] == 0xFF && cabecera[1] == 0xD8 && cabecera[2] == 0xFF;
             bool esPNG = cabecera[0] == 0x89 && cabecera[1] == 0x50 && cabecera[2] == 0x4E && cabecera[3] == 0x47;
             bool esGIF = cabecera[0] == 0x47 && cabecera[1] == 0x49 && cabecera[2] == 0x46;
@@ -55,12 +49,11 @@ namespace MediaCenter.Servicios
                 return false;
             }
 
-            // Prueba final: intentar abrirlo como imagen. Si truena, está dañado
+            
             try
             {
                 using (Image img = Image.FromFile(ruta))
                 {
-                    // Si llegamos aquí, la imagen abrió correctamente
                     return true;
                 }
             }
@@ -71,9 +64,7 @@ namespace MediaCenter.Servicios
             }
         }
 
-        // ============================================================
-        // MÉTODO 2: Validar AUDIO
-        // ============================================================
+        
         public static bool EsAudioValido(string ruta, out string mensajeError)
         {
             mensajeError = "";
@@ -98,8 +89,7 @@ namespace MediaCenter.Servicios
                 return false;
             }
 
-            // Magic numbers de audio comunes
-            // MP3 con tag ID3: "ID3" al inicio
+            
             bool esMP3_ID3 = cabecera[0] == 0x49 && cabecera[1] == 0x44 && cabecera[2] == 0x33;
             // MP3 sin tag: empieza con FF FB o FF F3 o FF F2
             bool esMP3_Raw = cabecera[0] == 0xFF && (cabecera[1] == 0xFB || cabecera[1] == 0xF3 || cabecera[1] == 0xF2);
@@ -122,9 +112,7 @@ namespace MediaCenter.Servicios
             return true;
         }
 
-        // ============================================================
-        // MÉTODO 3: Validar VIDEO
-        // ============================================================
+        
         public static bool EsVideoValido(string ruta, out string mensajeError)
         {
             mensajeError = "";
@@ -170,9 +158,7 @@ namespace MediaCenter.Servicios
             return true;
         }
 
-        // ============================================================
-        // MÉTODO AUXILIAR: Leer los primeros N bytes de un archivo
-        // ============================================================
+        
         private static byte[] LeerCabecera(string ruta, int cantidadBytes)
         {
             try
@@ -182,7 +168,6 @@ namespace MediaCenter.Servicios
                     byte[] buffer = new byte[cantidadBytes];
                     int leidos = fs.Read(buffer, 0, cantidadBytes);
 
-                    // Si el archivo es más corto que lo que pedimos, está corrupto
                     if (leidos < cantidadBytes) return null;
 
                     return buffer;
@@ -190,7 +175,6 @@ namespace MediaCenter.Servicios
             }
             catch
             {
-                // Si no podemos leerlo (permisos, bloqueado, etc.) lo tratamos como inválido
                 return null;
             }
         }

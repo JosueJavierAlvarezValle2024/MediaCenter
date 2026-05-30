@@ -21,7 +21,7 @@ namespace MediaCenter.Vistas
         {
             InitializeComponent();
             AplicarTemaVideos();
-            CargarVideosDesdeDB(); // ← agrega esta línea
+            CargarVideosDesdeDB(); 
 
 
         }
@@ -36,7 +36,7 @@ namespace MediaCenter.Vistas
             {
                 int agregados = 0;
                 int rechazados = 0;
-                int duplicados = 0; // ← nuevo
+                int duplicados = 0;
                 string listaRechazos = "";
 
                 foreach (string ruta in dialogo.FileNames)
@@ -50,7 +50,6 @@ namespace MediaCenter.Vistas
                         continue;
                     }
 
-                    // ── Verificar duplicado ──────────────────────
                     if (ArchivoYaExisteEnBD(ruta))
                     {
                         duplicados++;
@@ -88,7 +87,6 @@ namespace MediaCenter.Vistas
             ItemCancion item = (ItemCancion)lstVideos.SelectedItem;
             string ruta = item.Ruta;
 
-            // Verificar que el archivo sigue existiendo
             if (!System.IO.File.Exists(ruta))
             {
                 MessageBox.Show("El archivo ya no existe en:\n" + ruta,
@@ -97,7 +95,7 @@ namespace MediaCenter.Vistas
                 return;
             }
 
-            // Reproducir
+            
             try
             {
                 wmVideo.URL = ruta;
@@ -109,7 +107,6 @@ namespace MediaCenter.Vistas
                 return;
             }
 
-            // Mostrar información del archivo
             try
             {
                 FileInfo info = new FileInfo(ruta);
@@ -135,22 +132,18 @@ namespace MediaCenter.Vistas
         {
             this.BackColor = UITheme.ContentBg;
 
-            // ── LISTBOX VIDEOS ───────────────────────────────
             lstVideos.BackColor = Color.FromArgb(10, 22, 40);
             lstVideos.ForeColor = UITheme.TextSecondary;
             lstVideos.BorderStyle = BorderStyle.None;
             lstVideos.Font = new Font("Segoe UI", 10f);
             lstVideos.ItemHeight = 28;
 
-            // ── INFO VIDEO ───────────────────────────────────
             lblInfoVideo.BackColor = Color.FromArgb(10, 22, 40);
             lblInfoVideo.ForeColor = UITheme.TextSecondary;
             lblInfoVideo.Font = new Font("Segoe UI", 9.5f);
 
-            // ── REPRODUCTOR ──────────────────────────────────
             wmVideo.BackColor = Color.FromArgb(6, 14, 26);
 
-            // ── BOTÓN ────────────────────────────────────────
             EstilarBoton(btnAgregarVideo, "  🎬  Agregar Video", UITheme.SidebarActive);
 
             btnImportarCarpeta.Location = new Point(
@@ -240,7 +233,7 @@ namespace MediaCenter.Vistas
 
                 int importados = 0;
                 int rechazados = 0;
-                int duplicados = 0; // ← nuevo
+                int duplicados = 0; 
                 string listaRechazos = "";
 
                 foreach (string ruta in archivos)
@@ -254,7 +247,6 @@ namespace MediaCenter.Vistas
                         continue;
                     }
 
-                    // ── Verificar duplicado ──────────────────────
                     if (ArchivoYaExisteEnBD(ruta))
                     {
                         duplicados++;
@@ -326,11 +318,6 @@ namespace MediaCenter.Vistas
                 }
             }
         }
-
-
-
-
-
 
     }
 }

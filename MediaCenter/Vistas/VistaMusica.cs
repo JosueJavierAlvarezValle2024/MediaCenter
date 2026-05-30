@@ -14,7 +14,6 @@ namespace MediaCenter.Vistas
 
     public partial class VistaMusica : UserControl
     {
-        // Diccionario que guarda cada lista con sus canciones
         private System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<ItemCancion>> listasReproduccion
             = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<ItemCancion>>();
 
@@ -23,7 +22,7 @@ namespace MediaCenter.Vistas
         {
             InitializeComponent();
             AplicarTemaMusica();
-            CargarMusicaDesdeDB(); // ← agrega esta línea
+            CargarMusicaDesdeDB(); 
 
         }
 
@@ -38,7 +37,7 @@ namespace MediaCenter.Vistas
             {
                 int agregadas = 0;
                 int rechazadas = 0;
-                int duplicadas = 0; // ← nuevo
+                int duplicadas = 0; 
                 string listaRechazos = "";
 
                 foreach (string ruta in dialogo.FileNames)
@@ -53,7 +52,6 @@ namespace MediaCenter.Vistas
                         continue;
                     }
 
-                    // ── Verificar duplicado ──────────────────────
                     if (ArchivoYaExisteEnBD(ruta))
                     {
                         duplicadas++;
@@ -96,7 +94,6 @@ namespace MediaCenter.Vistas
             }
         }
 
-        // Clase auxiliar para guardar texto visible + ruta real
         public class ItemCancion
         {
             public string Texto { get; set; }
@@ -108,7 +105,6 @@ namespace MediaCenter.Vistas
                 Ruta = ruta;
             }
 
-            // Esto define cómo se muestra en el ListBox
             public override string ToString()
             {
                 return Texto;
@@ -122,7 +118,6 @@ namespace MediaCenter.Vistas
             ItemCancion item = (ItemCancion)lstCanciones.SelectedItem;
             string ruta = item.Ruta;
 
-            // Verificar que el archivo sigue existiendo antes de reproducir
             if (!System.IO.File.Exists(ruta))
             {
                 MessageBox.Show("El archivo ya no existe en:\n" + ruta,
@@ -132,7 +127,6 @@ namespace MediaCenter.Vistas
                 return;
             }
 
-            // Reproducir
             try
             {
                 wmPlayer.URL = ruta;
@@ -144,7 +138,6 @@ namespace MediaCenter.Vistas
                 return;
             }
 
-            // Leer y mostrar metadatos
             try
             {
                 var archivo = TagLib.File.Create(ruta);
@@ -158,7 +151,6 @@ namespace MediaCenter.Vistas
 
                 lblInfoCancion.Text = info;
 
-                // Mostrar caratula si existe
                 if (archivo.Tag.Pictures.Length > 0)
                 {
                     var picData = archivo.Tag.Pictures[0].Data.Data;
@@ -187,7 +179,6 @@ namespace MediaCenter.Vistas
 
             if (string.IsNullOrWhiteSpace(nombre)) return;
 
-            // Agregar al ComboBox
             cmbListas.Items.Add(nombre);
             cmbListas.SelectedItem = nombre;
 
@@ -211,7 +202,6 @@ namespace MediaCenter.Vistas
             ItemCancion cancion = (ItemCancion)lstCanciones.SelectedItem;
             string nombreLista = cmbListas.SelectedItem.ToString();
 
-            // Guardar en el diccionario de listas
             if (!listasReproduccion.ContainsKey(nombreLista))
                 listasReproduccion[nombreLista] = new System.Collections.Generic.List<ItemCancion>();
 
@@ -236,7 +226,6 @@ namespace MediaCenter.Vistas
                 return;
             }
 
-            // Reemplazar las canciones del ListBox con las de esta lista
             lstCanciones.Items.Clear();
             foreach (var cancion in listasReproduccion[nombreLista])
             {
@@ -252,53 +241,43 @@ namespace MediaCenter.Vistas
         {
             this.BackColor = UITheme.ContentBg;
 
-            // ── LISTBOX CANCIONES ────────────────────────────
             lstCanciones.BackColor = Color.FromArgb(10, 22, 40);
             lstCanciones.ForeColor = UITheme.TextSecondary;
             lstCanciones.BorderStyle = BorderStyle.None;
             lstCanciones.Font = new Font("Segoe UI", 10f);
             lstCanciones.ItemHeight = 28;
 
-            // ── CARÁTULA ─────────────────────────────────────
             picCaratula.BackColor = Color.FromArgb(6, 14, 26);
             picCaratula.BorderStyle = BorderStyle.None;
             picCaratula.SizeMode = PictureBoxSizeMode.Zoom;
 
-            // ── INFO CANCIÓN ─────────────────────────────────
             lblInfoCancion.BackColor = Color.FromArgb(10, 22, 40);
             lblInfoCancion.ForeColor = UITheme.TextSecondary;
             lblInfoCancion.Font = new Font("Segoe UI", 9.5f);
-            lblInfoCancion.BorderStyle = BorderStyle.None; // ← esta línea quita el borde
+            lblInfoCancion.BorderStyle = BorderStyle.None; 
 
-            // ── ETIQUETA LISTAS ──────────────────────────────
             lblListas.ForeColor = UITheme.TextMuted;
             lblListas.BackColor = UITheme.ContentBg;
             lblListas.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
 
-            // ── COMBOBOX LISTAS ──────────────────────────────
             cmbListas.BackColor = Color.FromArgb(10, 22, 40);
             cmbListas.ForeColor = UITheme.TextSecondary;
             cmbListas.FlatStyle = FlatStyle.Flat;
             cmbListas.Font = new Font("Segoe UI", 10f);
 
-            // ── REPRODUCTOR ──────────────────────────────────
-            // El fondo del WMP no se puede cambiar directamente,
-            // pero lo rodeamos con el color del tema
+    
             wmPlayer.BackColor = Color.FromArgb(6, 14, 26);
 
-            // ── BOTONES ──────────────────────────────────────
             EstilarBoton(btnAgregarCancion, "  🎵  Agregar Canción", UITheme.SidebarActive);
             EstilarBoton(btnNuevaLista, "  ➕  Nueva Lista", Color.FromArgb(13, 71, 161));
             EstilarBoton(btnAgregarALista, "  📋  Agregar a Lista", Color.FromArgb(13, 71, 161));
             EstilarBoton(btnVerLista, "  👁️  Ver Lista", Color.FromArgb(13, 71, 161));
 
-            // ── COMBOBOX OSCURO ──────────────────────────────────
             cmbListas.BackColor = Color.FromArgb(10, 22, 40);
             cmbListas.ForeColor = UITheme.TextSecondary;
             cmbListas.FlatStyle = FlatStyle.Flat;
             cmbListas.Font = new Font("Segoe UI", 10f);
 
-            // Panel que rodea al ComboBox simulando borde de color
             Panel pnlCombo = new Panel();
             pnlCombo.BackColor = UITheme.AccentBlue;
             pnlCombo.Bounds = new Rectangle(
@@ -399,7 +378,7 @@ namespace MediaCenter.Vistas
 
                 int importadas = 0;
                 int rechazadas = 0;
-                int duplicadas = 0; // ← nuevo
+                int duplicadas = 0; 
                 string listaRechazos = "";
 
                 foreach (string ruta in archivos)
@@ -413,7 +392,6 @@ namespace MediaCenter.Vistas
                         continue;
                     }
 
-                    // ── Verificar duplicado ──────────────────────
                     if (ArchivoYaExisteEnBD(ruta))
                     {
                         duplicadas++;
@@ -486,7 +464,6 @@ namespace MediaCenter.Vistas
             {
                 if (File.Exists(cancion.RutaCompleta))
                 {
-                    // Leer metadatos con TagLib
                     string textoMostrar;
                     try
                     {
@@ -511,9 +488,5 @@ namespace MediaCenter.Vistas
                 }
             }
         }
-
-
-
-
     }
 }

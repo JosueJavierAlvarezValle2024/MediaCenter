@@ -23,7 +23,6 @@ namespace MediaCenter.Vistas
             AplicarTemaBaseDatos();
         }
 
-        // Carga todos los archivos de la BD en la tabla
         private void CargarDatos()
         {
             try
@@ -51,7 +50,6 @@ namespace MediaCenter.Vistas
                 return;
             }
 
-            // Pedir confirmación
             DialogResult respuesta = MessageBox.Show(
                 "¿Estás seguro de eliminar este registro?",
                 "Confirmar eliminación",
@@ -88,12 +86,10 @@ namespace MediaCenter.Vistas
                 string[] lineas = File.ReadAllLines(dialogo.FileName);
                 int insertados = 0;
 
-                // Empezamos en 1 para saltar el encabezado
                 for (int i = 1; i < lineas.Length; i++)
                 {
                     string[] datos = lineas[i].Split(',');
 
-                    // Verificar que tenga las 6 columnas esperadas
                     if (datos.Length < 6) continue;
 
                     string nombre = datos[0].Trim();
@@ -132,7 +128,6 @@ namespace MediaCenter.Vistas
 
                 using (StreamWriter writer = new StreamWriter(dialogo.FileName))
                 {
-                    // Escribir encabezados
                     for (int i = 0; i < tabla.Columns.Count; i++)
                     {
                         writer.Write(tabla.Columns[i].ColumnName);
@@ -140,7 +135,6 @@ namespace MediaCenter.Vistas
                     }
                     writer.WriteLine();
 
-                    // Escribir filas
                     foreach (DataRow fila in tabla.Rows)
                     {
                         for (int i = 0; i < tabla.Columns.Count; i++)
@@ -163,7 +157,6 @@ namespace MediaCenter.Vistas
 
         private void btnNuevo_Click(object sender, EventArgs e)
         {
-            // Pedir cada dato con cuadros de diálogo
             string nombre = Microsoft.VisualBasic.Interaction.InputBox(
                 "Nombre del archivo:", "Nuevo registro", "ejemplo.jpg");
             if (string.IsNullOrWhiteSpace(nombre)) return;
@@ -216,7 +209,6 @@ namespace MediaCenter.Vistas
 
             try
             {
-                // Obtener los valores actuales
                 int id = Convert.ToInt32(dgvArchivos.CurrentRow.Cells["IdArchivo"].Value);
                 string nombreActual = dgvArchivos.CurrentRow.Cells["Nombre"].Value.ToString();
                 string rutaActual = dgvArchivos.CurrentRow.Cells["RutaCompleta"].Value.ToString();
@@ -225,7 +217,6 @@ namespace MediaCenter.Vistas
                 decimal tamanoActual = Convert.ToDecimal(dgvArchivos.CurrentRow.Cells["TamanoKB"].Value);
                 bool corruptoActual = Convert.ToBoolean(dgvArchivos.CurrentRow.Cells["EstaCorrupto"].Value);
 
-                // Pedir nuevos valores (con el actual como valor por defecto)
                 string nombre = Microsoft.VisualBasic.Interaction.InputBox(
                     "Nombre:", "Modificar", nombreActual);
                 if (string.IsNullOrWhiteSpace(nombre)) return;
@@ -270,21 +261,18 @@ namespace MediaCenter.Vistas
         {
             this.BackColor = UITheme.ContentBg;
 
-            // ── DATAGRIDVIEW ─────────────────────────────────
             dgvArchivos.BackgroundColor = Color.FromArgb(10, 22, 40);
             dgvArchivos.GridColor = UITheme.DividerLine;
             dgvArchivos.BorderStyle = BorderStyle.None;
-            dgvArchivos.RowHeadersVisible = false;          // oculta la columna gris de la izq
+            dgvArchivos.RowHeadersVisible = false;          
             dgvArchivos.EnableHeadersVisualStyles = false;
 
-            // Encabezados de columna
             dgvArchivos.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(13, 71, 161);
             dgvArchivos.ColumnHeadersDefaultCellStyle.ForeColor = UITheme.TextPrimary;
             dgvArchivos.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
             dgvArchivos.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(13, 71, 161);
             dgvArchivos.ColumnHeadersHeight = 38;
 
-            // Filas normales
             dgvArchivos.DefaultCellStyle.BackColor = Color.FromArgb(10, 22, 40);
             dgvArchivos.DefaultCellStyle.ForeColor = UITheme.TextSecondary;
             dgvArchivos.DefaultCellStyle.SelectionBackColor = UITheme.SidebarActive;
@@ -292,10 +280,9 @@ namespace MediaCenter.Vistas
             dgvArchivos.DefaultCellStyle.Font = new Font("Segoe UI", 9.5f);
             dgvArchivos.RowTemplate.Height = 30;
 
-            // Filas alternadas (efecto zebra sutil)
             dgvArchivos.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(13, 31, 60);
 
-            // ── BOTONES ──────────────────────────────────────
+            
             EstilarBoton(btnImportarCSV, "  📥  Importar CSV", Color.FromArgb(13, 71, 161));
             EstilarBoton(btnExportarCSV, "  📤  Exportar CSV", Color.FromArgb(13, 71, 161));
             EstilarBoton(btnNuevo, "  ➕  Nuevo", UITheme.SidebarActive);
@@ -304,7 +291,6 @@ namespace MediaCenter.Vistas
             EstilarBoton(btnModificar, "  ✏️  Modificar", Color.FromArgb(13, 71, 161));
 
 
-            // Asegura que los botones sean suficientemente anchos
             foreach (Button btn in new[] { btnImportarCSV, btnExportarCSV,
                                  btnNuevo, btnEliminar,
                                  btnRecargar, btnModificar })
@@ -316,10 +302,8 @@ namespace MediaCenter.Vistas
                 btn.Padding = new Padding(8, 0, 0, 0);
             }
 
-            // Separar los botones con espacio entre ellos
             int xActual = btnImportarCSV.Left;
-            int espacio = 10; // espacio entre botones
-
+            int espacio = 10; 
             foreach (Button btn in new[] { btnImportarCSV, btnExportarCSV,
                                  btnNuevo, btnEliminar,
                                  btnRecargar, btnModificar })
@@ -347,21 +331,5 @@ namespace MediaCenter.Vistas
             btn.Cursor = Cursors.Hand;
             btn.Height = 36;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

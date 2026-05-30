@@ -16,8 +16,7 @@ namespace MediaCenter.Servicios
             _connectionString = connectionString;
         }
 
-        // ── Cuenta cuántos archivos hay de un tipo específico ──
-        // tipo puede ser: "Foto", "Musica" o "Video"
+        
         public int ContarPorTipo(string tipo)
         {
             int total = 0;
@@ -30,7 +29,6 @@ namespace MediaCenter.Servicios
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    // @tipo evita inyección SQL — buena práctica siempre
                     cmd.Parameters.AddWithValue("@tipo", tipo);
                     total = (int)cmd.ExecuteScalar();
                 }
@@ -70,7 +68,7 @@ namespace MediaCenter.Servicios
             return lista;
         }
 
-        // Obtener todos los archivos de un tipo específico
+        
         public List<(int Id, string Nombre, string RutaCompleta)>
             ObtenerArchivosPorTipo(string tipo)
         {

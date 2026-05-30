@@ -8,20 +8,16 @@ namespace MediaCenter.Datos
     internal class ConexionSQL
     {
 
-        // Cambia "TU_SERVIDOR" por el nombre de tu servidor SQL
         private static string cadenaConexion =
         @"Server=HPCOMPUTER18\SQLEXPRESS01;Database=MediaCenterDB;Integrated Security=True;TrustServerCertificate=True;";
 
 
-        // Obtener una conexión nueva
         public static SqlConnection ObtenerConexion()
         {
             return new SqlConnection(cadenaConexion);
         }
 
-        // =============================================
-        // INSERTAR un archivo nuevo en la BD
-        // =============================================
+        
         public static void InsertarArchivo(string nombre, string ruta, string tipo,
                                             string extension, decimal tamanoKB, bool estaCorrupto)
         {
@@ -46,9 +42,7 @@ namespace MediaCenter.Datos
             }
         }
 
-        // =============================================
-        // OBTENER todos los archivos de la BD
-        // =============================================
+        
         public static DataTable ObtenerTodosLosArchivos()
         {
             DataTable tabla = new DataTable();
@@ -68,9 +62,7 @@ namespace MediaCenter.Datos
         }
 
 
-        // =============================================
-        // ACTUALIZAR un archivo existente
-        // =============================================
+        
         public static void ActualizarArchivo(int idArchivo, string nombre, string ruta,
                                               string tipo, string extension, decimal tamanoKB, bool estaCorrupto)
         {
@@ -97,9 +89,7 @@ namespace MediaCenter.Datos
             }
         }
 
-        // =============================================
-        // ELIMINAR un archivo por su ID
-        // =============================================
+        
         public static void EliminarArchivo(int idArchivo)
         {
             using (SqlConnection conn = ObtenerConexion())
@@ -138,22 +128,6 @@ namespace MediaCenter.Datos
             return total;
         }
 
-
-
-
-
-
-
-
-    }
-    
-
-
-
-
-
-
-
-
+    }   
 
 }
